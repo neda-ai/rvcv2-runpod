@@ -5,6 +5,7 @@ import runpod
 import torch
 import numpy as np
 import soundfile as sf
+import requests
 from io import BytesIO
 
 # Add RVC-v2-UI to Python path
@@ -15,6 +16,14 @@ from infer.modules.vc.utils import load_audio
 
 # Initialize the VC model
 vc = VC()
+
+def download_audio_from_url(url):
+    """Download audio file from URL."""
+    response = requests.get(url)
+    response.raise_for_status()  # Raise an exception for bad status codes
+    audio_bytes = BytesIO(response.content)
+    audio, sr = sf.read(audio_bytes)
+    return audio, sr
 
 def decode_audio(audio_base64):
     """Decode base64 audio to numpy array."""
@@ -36,17 +45,23 @@ def handler(event):
     """
     try:
         # Get input parameters
-        input_data = event["input"]
-        audio_base64 = input_data["audio_file"]
-        model_path = input_data["model_path"]
-        transpose = input_data.get("transpose", 0)
-        f0_method = input_data.get("f0_method", "harvest")
-        index_rate = float(input_data.get("index_rate", 0.5))
-        protect_voiceless = float(input_data.get("protect_voiceless", 0.33))
-        filter_radius = int(input_data.get("filter_radius", 3))
+        input = event["input"]
+        audio_input = input.get("audio_file") or input.get("audio_url")
+        if not audio_input:
+            raise ValueError("Either audio_file (base64) or audio_url must be provided")
+            
+        model_path = input["model_path"]
+        transpose = input.get("transpose", 0)
+        f0_method = input.get("f0_method", "harvest")
+        index_rate = float(input.get("index_rate", 0.5))
+        protect_voiceless = float(input.get("protect_voiceless", 0.33))
+        filter_radius = int(input.get("filter_radius", 3))
 
         # Decode input audio
-        audio, sr = decode_audio(audio_base64)
+        if "audio_url" in input:
+            audio, sr = download_audio_from_url(audio_input)
+        else:
+            audio, sr = decode_audio(audio_input)
         
         # Load the model if not already loaded
         if not hasattr(handler, 'current_model') or handler.current_model != model_path:

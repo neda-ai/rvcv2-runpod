@@ -23,11 +23,11 @@ COPY requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Copy handler code
-COPY handler.py .
+COPY rp_handler.py .
 
 # Create model cache directory
 RUN mkdir -p /root/.cache/huggingface
 ENV MODEL_CACHE_DIR=/root/.cache/huggingface
 
 # Set up entrypoint
-CMD ["python3", "-u", "handler.py"] 
+CMD ["python3", "-u", "rp_handler.py"] 
