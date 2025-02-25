@@ -5,7 +5,7 @@ ENV PYTHONUNBUFFERED=1
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    python3.10 \
+    python3.9 \
     python3-pip \
     git \
     ffmpeg \
@@ -18,16 +18,22 @@ WORKDIR /app
 # Clone RVC v2 repository
 RUN git clone https://github.com/PseudoRAM/RVC-v2-UI.git /app/RVC-v2-UI
 
-# Copy requirements and install Python dependencies
-COPY requirements.txt .
+# Install dependencies
+WORKDIR /app/RVC-v2-UI
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Copy handler code
-COPY rp_handler.py .
+# Download required models
+RUN python3 src/download_models.py
 
 # Create model cache directory
 RUN mkdir -p /root/.cache/huggingface
 ENV MODEL_CACHE_DIR=/root/.cache/huggingface
+
+# Copy handler code
+COPY rp_handler.py /app/
+
+# Set working directory back to /app
+WORKDIR /app
 
 # Set up entrypoint
 CMD ["python3", "-u", "rp_handler.py"] 
