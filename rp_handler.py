@@ -1,96 +1,80 @@
-import os
-import sys
-import base64
 import runpod
-import torch
-import numpy as np
-import soundfile as sf
+import os
+import time
+from gradio_client import Client
 import requests
-from io import BytesIO
+from urllib.parse import urlparse
+import json
 
-# Add RVC-v2-UI to Python path
-sys.path.append('/app/RVC-v2-UI')
-
-from infer.modules.vc.modules import VC
-from infer.modules.vc.utils import load_audio
-
-# Initialize the VC model
-vc = VC()
-
-def download_audio_from_url(url):
-    """Download audio file from URL."""
+def download_file(url):
+    """Download a file from a URL to a temporary location"""
     response = requests.get(url)
-    response.raise_for_status()  # Raise an exception for bad status codes
-    audio_bytes = BytesIO(response.content)
-    audio, sr = sf.read(audio_bytes)
-    return audio, sr
-
-def decode_audio(audio_base64):
-    """Decode base64 audio to numpy array."""
-    audio_bytes = base64.b64decode(audio_base64)
-    audio_io = BytesIO(audio_bytes)
-    audio, sr = sf.read(audio_io)
-    return audio, sr
-
-def encode_audio(audio, sr):
-    """Encode numpy array audio to base64."""
-    audio_io = BytesIO()
-    sf.write(audio_io, audio, sr, format='WAV')
-    audio_bytes = audio_io.getvalue()
-    return base64.b64encode(audio_bytes).decode('utf-8')
+    filename = os.path.basename(urlparse(url).path)
+    temp_path = f"/tmp/{filename}"
+    with open(temp_path, "wb") as f:
+        f.write(response.content)
+    return temp_path
 
 def handler(event):
-    """
-    RunPod handler function for voice conversion.
-    """
+    """Handle the RunPod event by interfacing with the Gradio API"""
     try:
         # Get input parameters
-        input = event["input"]
-        audio_input = input.get("audio_file") or input.get("audio_url")
-        if not audio_input:
-            raise ValueError("Either audio_file (base64) or audio_url must be provided")
-            
-        model_path = input["model_path"]
-        transpose = input.get("transpose", 0)
-        f0_method = input.get("f0_method", "harvest")
-        index_rate = float(input.get("index_rate", 0.5))
-        protect_voiceless = float(input.get("protect_voiceless", 0.33))
-        filter_radius = int(input.get("filter_radius", 3))
-
-        # Decode input audio
-        if "audio_url" in input:
-            audio, sr = download_audio_from_url(audio_input)
-        else:
-            audio, sr = decode_audio(audio_input)
+        input_params = event["input"]
         
-        # Load the model if not already loaded
-        if not hasattr(handler, 'current_model') or handler.current_model != model_path:
-            vc.get_vc(model_path)
-            handler.current_model = model_path
-
-        # Process audio
-        audio_opt = vc.vc_single(
-            audio, 
-            transpose, 
-            f0_method=f0_method,
-            index_rate=index_rate,
-            protect=protect_voiceless,
-            filter_radius=filter_radius
-        )[0]
-
-        # Encode output audio
-        output_base64 = encode_audio(audio_opt, sr)
-
+        # Initialize Gradio client
+        client = Client("http://127.0.0.1:7860/")
+        
+        # If there's a custom model URL, download it first
+        if input_params.get("custom_rvc_model_download_url"):
+            model_url = input_params["custom_rvc_model_download_url"]
+            model_name = input_params["rvc_model"]
+            
+            # Download and set up the custom model
+            result = client.predict(
+                model_url,
+                model_name,
+                api_name="/download_online_model"
+            )
+            print(f"Model download result: {result}")
+            
+            # Update models list
+            client.predict(api_name="/update_models_list")
+            
+            # Wait a bit for the model to be loaded
+            time.sleep(2)
+        
+        # Download the input audio file
+        input_audio_path = download_file(input_params["input_audio"])
+        
+        # Perform voice conversion
+        result = client.predict(
+            input_audio_path,  # input_audio
+            input_params["rvc_model"],  # rvc_model
+            input_params.get("pitch_change", 0),  # pitch
+            input_params.get("f0_method", "rmvpe"),  # f0_method
+            input_params.get("index_rate", 0.5),  # index_rate
+            input_params.get("filter_radius", 3),  # filter_radius
+            input_params.get("rms_mix_rate", 0.25),  # rms_mix_rate
+            input_params.get("protect", 0.33),  # protect
+            api_name="/voice_conversion"
+        )
+        
+        # Read the output file and convert to base64
+        with open(result, "rb") as f:
+            output_data = f.read()
+            
+        # Clean up temporary files
+        os.remove(input_audio_path)
+        os.remove(result)
+        
         return {
             "output": {
-                "converted_audio": output_base64
+                "audio_data": output_data,
+                "output_format": input_params.get("output_format", "wav")
             }
         }
-
+        
     except Exception as e:
-        return {
-            "error": str(e)
-        }
+        return {"error": str(e)}
 
-if __name__ == "__main__":
-    runpod.serverless.start({"handler": handler}) 
+runpod.serverless.start({"handler": handler})

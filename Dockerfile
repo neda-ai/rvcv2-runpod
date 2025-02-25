@@ -10,33 +10,32 @@ RUN apt-get update && apt-get install -y \
     git \
     ffmpeg \
     libsndfile1 \
+    google-perftools \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
-WORKDIR /app
+WORKDIR /
 
 # Clone RVC v2 repository
-RUN git clone https://github.com/PseudoRAM/RVC-v2-UI.git /app/RVC-v2-UI
+RUN git clone https://github.com/PseudoRAM/RVC-v2-UI.git /RVC-v2-UI
 
-# Install dependencies
-WORKDIR /app/RVC-v2-UI
+# Install RVC-v2-UI dependencies
+WORKDIR /RVC-v2-UI
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Download required models
 RUN python3 src/download_models.py
 
-# Create model cache directory
-RUN mkdir -p /root/.cache/huggingface
-ENV MODEL_CACHE_DIR=/root/.cache/huggingface
+# Set up RunPod handler
+WORKDIR /
+COPY requirements.txt rp_handler.py start.sh ./
+RUN chmod +x start.sh
 
-# Set working directory back to /app
-WORKDIR /app
-
-# Copy all files
-COPY . .
-
-# Install dependencies
+# Install RunPod handler dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt
 
+# Create directory for temporary files
+RUN mkdir -p /tmp
+
 # Set up entrypoint
-CMD ["python3", "-u", "rp_handler.py"] 
+ENTRYPOINT ["/start.sh"] 
