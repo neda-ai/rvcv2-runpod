@@ -29,11 +29,14 @@ RUN python3 src/download_models.py
 RUN mkdir -p /root/.cache/huggingface
 ENV MODEL_CACHE_DIR=/root/.cache/huggingface
 
-# Copy handler code
-COPY rp_handler.py /app/
-
 # Set working directory back to /app
 WORKDIR /app
+
+# Copy all files
+COPY . .
+
+# Install dependencies
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Set up entrypoint
 CMD ["python3", "-u", "rp_handler.py"] 
