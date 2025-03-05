@@ -1,7 +1,7 @@
 import runpod
 import os
 import time
-from gradio_client import Client
+from gradio_client import Client, handle_file
 import requests
 from urllib.parse import urlparse
 import json
@@ -22,21 +22,23 @@ def handler(event):
         input_params = event["input"]
         
         # Initialize Gradio client
-        client = Client("http://127.0.0.1:7860/")
+        client = Client("http://127.0.0.1:7860")
         
         # If there's a custom model URL, download it first
         if input_params.get("custom_rvc_model_download_url"):
             model_url = input_params["custom_rvc_model_download_url"]
             model_name = input_params["rvc_model"]
             
+            try:
             # Download and set up the custom model
-            result = client.predict(
-                model_url,
-                model_name,
-                api_name="/download_online_model"
-            )
-            print(f"Model download result: {result}")
-            
+                result = client.predict(
+                    model_url,
+                    model_name,
+                    api_name="/download_online_model"
+                )
+                print(f"Model download result: {result}")
+            except:
+                pass
             # Update models list
             client.predict(api_name="/update_models_list")
             
@@ -48,14 +50,14 @@ def handler(event):
         
         # Perform voice conversion
         result = client.predict(
-            input_audio_path,  # input_audio
-            input_params["rvc_model"],  # rvc_model
-            input_params.get("pitch_change", 0),  # pitch
-            input_params.get("f0_method", "rmvpe"),  # f0_method
-            input_params.get("index_rate", 0.5),  # index_rate
-            input_params.get("filter_radius", 3),  # filter_radius
-            input_params.get("rms_mix_rate", 0.25),  # rms_mix_rate
-            input_params.get("protect", 0.33),  # protect
+            input_audio = handle_file(input_audio_path),  # input_audio
+            rvc_model = input_params["rvc_model"],  # rvc_model
+            pitch = input_params.get("pitch_change", 0),  # pitch
+            f0_method = input_params.get("f0_method", "rmvpe"),  # f0_method
+            index_rate = input_params.get("index_rate", 0.5),  # index_rate
+            filter_radius = input_params.get("filter_radius", 3),  # filter_radius
+            rms_mix_rate = input_params.get("rms_mix_rate", 0.25),  # rms_mix_rate
+            protect = input_params.get("protect", 0.33),  # protect
             api_name="/voice_conversion"
         )
         

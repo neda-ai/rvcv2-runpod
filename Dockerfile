@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /
 
 # Clone RVC v2 repository
-RUN git clone https://github.com/PseudoRAM/RVC-v2-UI.git /RVC-v2-UI
+RUN git clone https://github.com/neda-ai/RVC-v2-UI.git /RVC-v2-UI
 
 # Install RVC-v2-UI dependencies
 WORKDIR /RVC-v2-UI
