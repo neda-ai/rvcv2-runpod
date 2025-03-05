@@ -4,7 +4,6 @@ import time
 from gradio_client import Client, handle_file
 import requests
 from urllib.parse import urlparse
-import json
 
 def download_file(url):
     """Download a file from a URL to a temporary location"""
