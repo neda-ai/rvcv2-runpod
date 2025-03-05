@@ -16,7 +16,7 @@ python3 /RVC-v2-UI/src/webui.py > >(tee $PIPE) &
 echo "rvcv2-runpod: Waiting for RVC-v2-UI to be ready..."
 while read line < $PIPE; do
   echo "$line"
-  if [[ "$line" == *"Running on local URL:  http://0.0.0.0:7860"* ]]; then
+  if [[ "$line" == *"To create a public link"* ]]; then
     echo "rvcv2-runpod: RVC-v2-UI is ready"
     break
   fi
