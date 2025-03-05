@@ -1,6 +1,6 @@
 # RVC-v2-UI RunPod Serverless Implementation
 
-This is a RunPod serverless implementation of [RVC-v2-UI](https://github.com/PseudoRAM/RVC-v2-UI), allowing you to run voice conversion tasks through a serverless API endpoint.
+This is a RunPod serverless implementation of [RVC-v2-UI](https://github.com/neda-ai/RVC-v2-UI), allowing you to run voice conversion tasks through a serverless API endpoint.
 
 ## Features
 
