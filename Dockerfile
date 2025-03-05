@@ -38,4 +38,4 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 RUN mkdir -p /tmp
 
 # Set up entrypoint
-ENTRYPOINT ["/start.sh"] 
+CMD [ "/start.sh" ]

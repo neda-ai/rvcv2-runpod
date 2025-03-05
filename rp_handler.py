@@ -37,8 +37,8 @@ def handler(event):
                     api_name="/download_online_model"
                 )
                 print(f"Model download result: {result}")
-            except:
-                pass
+            except Exception as e:
+                return {"error": str(e)}
             # Update models list
             client.predict(api_name="/update_models_list")
             
