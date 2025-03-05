@@ -22,7 +22,7 @@ def handler(event):
         input_params = event["input"]
         
         # Initialize Gradio client
-        client = Client("http://127.0,0.1:7860/")
+        client = Client("http://127.0.0.1:7860/")
         
         # If there's a custom model URL, download it first
         if input_params.get("custom_rvc_model_download_url"):
