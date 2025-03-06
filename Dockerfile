@@ -22,7 +22,6 @@ WORKDIR /
 RUN echo "Installing RVC-v2-UI: Invalidating cache at ${date}."
 
 # Clone RVC v2 repository
-RUN echo "Installing RVC-v2-UI: Invalidating cache at ${date}"
 RUN git clone https://github.com/neda-ai/RVC-v2-UI.git /RVC-v2-UI
 
 # Install RVC-v2-UI dependencies
