@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
+RUN echo "Installing RVC-v2-UI: Invalidating cache at ${date}."
 WORKDIR /
 RUN echo "Installing RVC-v2-UI: Invalidating cache at ${date}."
 
