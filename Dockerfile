@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+FROM nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -18,9 +18,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
-RUN echo "Installing RVC-v2-UI: Invalidating cache at ${date}."
 WORKDIR /
-RUN echo "Installing RVC-v2-UI: Invalidating cache at ${date}."
+RUN echo "Installing RVC-v2-UI: Invalidating cache. ##"
 
 # Clone RVC v2 repository
 RUN git clone https://github.com/neda-ai/RVC-v2-UI.git /RVC-v2-UI
