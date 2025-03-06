@@ -28,7 +28,7 @@ RUN git clone https://github.com/neda-ai/RVC-v2-UI.git /RVC-v2-UI
 # Install RVC-v2-UI dependencies
 WORKDIR /RVC-v2-UI
 RUN pip3 install --no-cache-dir -r requirements.txt
-
+RUN pip install torch torchvision torchaudio --upgrade --index-url https://download.pytorch.org/whl/cu118
 # Download required models
 RUN python3 src/download_models.py
 
