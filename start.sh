@@ -4,6 +4,19 @@
 TCMALLOC="$(ldconfig -p | grep -Po "libtcmalloc.so.\d" | head -n 1)"
 export LD_PRELOAD="${TCMALLOC}"
 
+# Verify GPU is available
+echo "rvcv2-runpod: Checking for GPU availability..."
+if command -v nvidia-smi &> /dev/null; then
+    nvidia-smi
+    echo "rvcv2-runpod: GPU detected"
+else
+    echo "rvcv2-runpod: WARNING - nvidia-smi not found. GPU may not be available!"
+fi
+
+# Verify PyTorch can see the GPU
+echo "rvcv2-runpod: Checking PyTorch GPU support..."
+python3 -c "import torch; print('CUDA available:', torch.cuda.is_available()); print('CUDA device count:', torch.cuda.device_count()); print('CUDA device name:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'N/A')"
+
 # Create a named pipe for capturing output
 PIPE=$(mktemp -u)
 mkfifo $PIPE
