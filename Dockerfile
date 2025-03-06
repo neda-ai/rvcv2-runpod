@@ -26,7 +26,7 @@ RUN git clone https://github.com/neda-ai/RVC-v2-UI.git /RVC-v2-UI
 
 # Install RVC-v2-UI dependencies
 WORKDIR /RVC-v2-UI
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Download required models
 RUN python3 src/download_models.py
@@ -37,7 +37,7 @@ COPY requirements.txt rp_handler.py start.sh ./
 RUN chmod +x start.sh
 
 # Install RunPod handler dependencies
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Create directory for temporary files
 RUN mkdir -p /tmp
