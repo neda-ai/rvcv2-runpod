@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y \
 
 # Set working directory
 WORKDIR /
-RUN echo "Installing RVC-v2-UI: Invalidating cache at ${date}"
+RUN echo "Installing RVC-v2-UI: Invalidating cache at ${date}."
 
 # Clone RVC v2 repository
 RUN echo "Installing RVC-v2-UI: Invalidating cache at ${date}"
