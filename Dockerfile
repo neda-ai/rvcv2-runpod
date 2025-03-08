@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y \
 
 # Set working directory
 WORKDIR /
-RUN echo "Installing RVC-v2-UI: Invalidating cache. ##"
+RUN echo "Installing RVC-v2-UI: Invalidating cache. ###"
 
 # Clone RVC v2 repository
 RUN git clone https://github.com/neda-ai/RVC-v2-UI.git /RVC-v2-UI
